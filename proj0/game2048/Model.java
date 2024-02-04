@@ -107,12 +107,40 @@ public class Model extends Observable {
      *    and the trailing tile does not.
      * */
     public boolean tilt(Side side) {
-        boolean changed;
-        changed = false;
+        boolean changed = false;
+        board.setViewingPerspective(side);
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        boolean[][] merged = new boolean[board.size()][board.size()];
+        for (int r = 2; r >= 0; r--) {
+            for (int c = 0; c <= 3; c++) {
+                Tile t = board.tile(c, r);
+                if (t != null) {
+                    int dc = c, dr = r + 1;
+                    while (dr <= 3) {
+                        Tile dt = board.tile(dc, dr);
+                        if (dt != null) {
+                            if (merged[dc][dr] == true || dt.value() != t.value()) {
+                                dr--;
+                            }
+                            break;
+                        }
+                        if (dr == 3) {
+                            break;
+                        }
+                        dr++;
+                    }
+                    if (dr != r) {
+                        changed = true;
+                    }
+                    if (board.move(dc, dr, t)) {
+                        merged[dc][dr] = true;
+                        score += board.tile(dc, dr).value();
+                    }
+                }
+            }
+        }
+
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
